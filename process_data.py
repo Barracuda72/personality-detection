@@ -72,10 +72,17 @@ def build_data_cv(datafile, cv=10, clean_string=True):
 
     return revs, vocab
 
-def get_W(word_vecs, k=300):
+def get_vec_size(word_vecs, default = 300):
+    for vec in iter(word_vecs.values()):
+        return vec.shape[0]
+    else:
+        return default
+
+def get_W(word_vecs):
     """
     Get word matrix. W[i] is the vector for word indexed by i
     """
+    k = get_vec_size(word_vecs)
     vocab_size = len(word_vecs)
     word_idx_map = dict()
     W = np.zeros(shape=(vocab_size+1, k), dtype=theano.config.floatX)
@@ -101,11 +108,12 @@ def load_bin_vec(fname, vocab):
             pass
     return word_vecs
 
-def add_unknown_words(word_vecs, vocab, min_df=1, k=300):
+def add_unknown_words(word_vecs, vocab, min_df=1):
     """
     For words that occur in at least min_df documents, create a separate word vector.
     0.25 is chosen so the unknown vectors have (approximately) same variance as pre-trained ones
     """
+    k = get_vec_size(word_vecs)
     for word in vocab:
         if word not in word_vecs and vocab[word] >= min_df:
             word_vecs[word] = np.random.uniform(-0.25,0.25,k)
